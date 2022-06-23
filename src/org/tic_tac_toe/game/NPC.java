@@ -1,9 +1,5 @@
 package org.tic_tac_toe.game;
 
-import org.tic_tac_toe.game.Game;
-import org.tic_tac_toe.game.Sign;
-import org.tic_tac_toe.game.Symbol;
-
 import java.util.Random;
 
 public class NPC {
