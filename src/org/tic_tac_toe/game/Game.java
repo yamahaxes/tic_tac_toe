@@ -17,9 +17,10 @@ public class Game extends JPanel {
     private Image imageO;
     private boolean gameOver;
     private boolean isPlayerTurn;
+    private Line line;
 
     public Game(){
-
+        // объект отвечает за игру "комьютера"
         npc = new PlayerNPC(this);
 
         // установка цвета фона
@@ -66,6 +67,7 @@ public class Game extends JPanel {
     }
 
     private void newGame(){
+        line = null;
         gameOver = false;
         gameField = new Sign[SIZE_FIELD][SIZE_FIELD];
         isPlayerTurn = new Random().nextBoolean();
@@ -93,6 +95,7 @@ public class Game extends JPanel {
         int count = 0;
 
         for (int column = 0; column < gameField[0].length; column++) {
+
             List<Sign> verticalSignList = new ArrayList<>();
             List<Sign> diagonalSignList1 = new ArrayList<>();
             List<Sign> diagonalSignList2 = new ArrayList<>();
@@ -103,6 +106,7 @@ public class Game extends JPanel {
                 List<Sign> horizonSignList = Arrays.asList(gameField[row]);
                 if (checkList(horizonSignList)){
                     gameOver = true;
+                    drawLine(0, row, gameField[row].length - 1, row);
                     break;
                 }
 
@@ -124,20 +128,42 @@ public class Game extends JPanel {
             if (gameOver) {
                 break;
             }
-            // Если по вертикали одинаковые
-            if (checkList(verticalSignList)
-                    || checkList(diagonalSignList1)
-                    || checkList(diagonalSignList2)){
+            // Если по вертикали или диагнолаи одинаковые
+            if (checkList(verticalSignList)){
                 gameOver = true;
+                drawLine(column, 0, column, gameField.length - 1);
+                break;
+            }
+            if (checkList(diagonalSignList1)){
+                gameOver = true;
+                drawLine(column, 0, gameField[gameField.length - 1].length - 1, gameField.length - 1);
+                break;
+            }
+            if (checkList(diagonalSignList2)){
+                gameOver = true;
+                drawLine(gameField[0].length - 1, 0, 0, gameField.length - 1);
                 break;
             }
         }
 
+        // Проверка на "ничью". Если заполнены все поля
         if(!gameOver && totalCount == count){
             gameOver = true;
         }
     }
 
+    private void drawLine(int column1, int row1, int column2, int row2){
+       int widthCell = getWidth() / SIZE_FIELD;
+       int heightCell = getHeight() / SIZE_FIELD;
+       line = new Line(column1 * widthCell + (widthCell / 2),
+               row1 * heightCell + (heightCell / 2),
+               column2 * widthCell + (widthCell / 2),
+               row2 * heightCell + (heightCell / 2));
+    }
+
+    /**
+     * Проверяет входящий List на одинаковые объекты, null игнорируется
+     */
     private boolean checkList(List<Sign> signs){
         if (signs.size() == 0){
             return false;
@@ -159,14 +185,14 @@ public class Game extends JPanel {
         return success;
     }
 
-    // NPC
+    // ход NPC
     private void nextNPCMove() {
         npc.nextMove();
         update();
     }
 
     // обработчик нажатия мышки на поле
-    protected void mousePressed(int x, int y){
+    private void mousePressed(int x, int y){
         if (gameOver){
             newGame();
             return;
@@ -189,7 +215,7 @@ public class Game extends JPanel {
     private void loadResources(){
         ClassLoader classLoader = this.getClass().getClassLoader();
 
-        background = new ImageIcon(Objects.requireNonNull(classLoader.getResource("image/background.png")))
+        background = new ImageIcon(Objects.requireNonNull(classLoader.getResource("image/3x3.png")))
                 .getImage();
         imageX = new ImageIcon(Objects.requireNonNull(classLoader.getResource("image/x.png")))
                 .getImage();
@@ -219,6 +245,17 @@ public class Game extends JPanel {
                 }
             }
         }
+
+        // отрисовка линии
+        if (line != null){
+            g.setColor(Color.BLACK);
+            Graphics2D graphics2D = (Graphics2D)g;
+            //создаем "кисть" для рисования
+            BasicStroke pen1 = new BasicStroke(20); //толщина линии 20
+            graphics2D.setStroke(pen1);
+            g.drawLine(line.getX1(), line.getY1(), line.getX2(), line.getY2());
+        }
+
     }
 
 }
