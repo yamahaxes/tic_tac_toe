@@ -10,7 +10,7 @@ import java.util.List;
 public class Game extends JPanel {
 
     private static final int SIZE_FIELD = 3;
-    private final PlayerNPC npc;
+    private final NPC npc;
     private Sign[][] gameField;
     private Image background;
     private Image imageX;
@@ -21,8 +21,7 @@ public class Game extends JPanel {
 
     public Game(){
         // объект отвечает за игру "комьютера"
-        npc = new PlayerNPC(this);
-
+        npc = new NPC(this, Symbol.O);
         // установка цвета фона
         setBackground(Color.lightGray);
         // загрузка ресурсов
@@ -54,8 +53,8 @@ public class Game extends JPanel {
 
             }
         });
-
-        newGame(); // Начало новой игры
+        // начало новой игры
+        newGame();
     }
 
     public Sign[][] getGameField() {
@@ -66,15 +65,23 @@ public class Game extends JPanel {
         return imageO;
     }
 
+    /**
+     * Начинает новую игру, обнуляя весь предыдущий результат
+     **/
     private void newGame(){
         line = null;
         gameOver = false;
         gameField = new Sign[SIZE_FIELD][SIZE_FIELD];
+        // Начало игры начинает случайно NPC или игрок
         isPlayerTurn = new Random().nextBoolean();
         update();
     }
 
+    /**
+     * Обновляет статус игры, после хода игрока или NPC
+    **/
     private void update(){
+        // перерисовывыет окно
         repaint();
 
         checkGameEnd();
@@ -82,6 +89,7 @@ public class Game extends JPanel {
             return;
         }
 
+        // передача хода игроку или NPC
         isPlayerTurn = !isPlayerTurn;
 
         if (!isPlayerTurn){
@@ -89,6 +97,11 @@ public class Game extends JPanel {
         }
     }
 
+    /**
+     * Проверка окончания игры.
+     * Метод пробегает по всей матрице, и проверяет горизонтальные, вертикальные и диагональные линнии на победу.
+     * Также учитывается "ничья".
+    **/
     private void checkGameEnd(){
 
         int totalCount = 0;
@@ -128,12 +141,15 @@ public class Game extends JPanel {
             if (gameOver) {
                 break;
             }
-            // Если по вертикали или диагнолаи одинаковые
+            // Если по вертикали
             if (checkList(verticalSignList)){
                 gameOver = true;
+                // отрисовка линии по результату победы
                 drawLine(column, 0, column, gameField.length - 1);
                 break;
             }
+
+            // Если по диагоналям
             if (checkList(diagonalSignList1)){
                 gameOver = true;
                 drawLine(column, 0, gameField[gameField.length - 1].length - 1, gameField.length - 1);
@@ -152,7 +168,11 @@ public class Game extends JPanel {
         }
     }
 
+    /**
+     * Инициализизирует новую строку
+     **/
     private void drawLine(int column1, int row1, int column2, int row2){
+
        int widthCell = getWidth() / SIZE_FIELD;
        int heightCell = getHeight() / SIZE_FIELD;
        line = new Line(column1 * widthCell + (widthCell / 2),
@@ -163,7 +183,7 @@ public class Game extends JPanel {
 
     /**
      * Проверяет входящий List на одинаковые объекты, null игнорируется
-     */
+    **/
     private boolean checkList(List<Sign> signs){
         if (signs.size() == 0){
             return false;
@@ -202,12 +222,12 @@ public class Game extends JPanel {
             return;
         }
 
-        // расчет метоположения
+        // расчет местоположения
         int row = y / (getHeight() / SIZE_FIELD);
         int column = x / (getWidth() / SIZE_FIELD);
 
         if (gameField[row][column] == null){
-            gameField[row][column] = new Sign(imageX);
+            gameField[row][column] = new Sign(imageX, Symbol.X);
             update();
         }
     }
